@@ -1,0 +1,9 @@
+{
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "destination": "https://claude.ai/public/artifacts/99d95c96-1e06-4776-8300-c9ea629a6f4c",
+      "permanent": true
+    }
+  ]
+}
