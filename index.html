@@ -1,0 +1,1296 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap");
+      * {
+        box-sizing: border-box;
+        user-select: none;
+        margin: 0;
+        padding: 0;
+      }
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #374151;
+      }
+      html,
+      body {
+        height: 100%;
+        overflow: hidden;
+      }
+      body {
+        font-family: "Sora", sans-serif;
+        background: white;
+        display: flex;
+        flex-direction: column;
+      }
+      .header {
+        text-align: center;
+        padding: 4px 16px 2px;
+        flex-shrink: 0;
+      }
+      .header h1 {
+        font-size: 18px;
+        font-weight: 700;
+        color: #111827;
+        letter-spacing: 1px;
+      }
+      .controls {
+        padding: 5px 16px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        align-items: end;
+        justify-content: center;
+        border-bottom: 1px solid #e5e7eb;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .controls-link {
+        position: absolute;
+        right: 16px;
+        font-size: 11px;
+      }
+      .controls-link a {
+        color: #111827;
+        cursor: pointer;
+        text-decoration: underline;
+      }
+      .controls-overview {
+        left: 16px;
+      }
+      .controls-disclaimer {
+        right: 16px;
+      }
+      .control-group {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      label {
+        font-weight: bold;
+        font-size: 13px;
+        color: #374151;
+        white-space: nowrap;
+      }
+      select,
+      input[type="month"] {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding: 5px 10px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 13px;
+        cursor: pointer;
+        background: white;
+        color: #374151;
+        height: 28px;
+        min-width: 150px;
+        position: relative;
+      }
+      select::-ms-expand {
+        display: none;
+      }
+      .select-arrow {
+        position: absolute;
+        top: 45%;
+        right: 14px;
+        width: 7px;
+        height: 7px;
+        border-right: 1.5px solid #374151;
+        border-bottom: 1.5px solid #374151;
+        transform: translateY(-65%) rotate(45deg);
+        pointer-events: none;
+      }
+      input[type="month"]::-webkit-calendar-picker-indicator {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+      }
+      .view-toggle {
+        display: flex;
+        border: 1px solid #374151;
+        border-radius: 6px;
+        overflow: hidden;
+        z-index: 1;
+      }
+      .view-btn {
+        padding: 5px 12px;
+        border: none;
+        background: white;
+        color: #374151;
+        font-size: 13px;
+        font-family: inherit;
+        cursor: pointer;
+      }
+      .view-btn.active {
+        background: #374151;
+        color: white;
+      }
+      .main {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 0;
+        padding: 8px 32px 48px;
+      }
+      .calendar-wrap {
+        width: 100%;
+      }
+      .calendar-grid {
+        display: grid;
+        grid-template-columns: repeat(7, 1fr);
+        gap: 8px;
+      }
+      .day-name {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        color: #6b7280;
+        height: 24px;
+      }
+      .day-cell {
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 3px 2px;
+        cursor: pointer;
+        position: relative;
+      }
+      .day-cell.empty {
+        background: transparent;
+        pointer-events: none;
+      }
+      .day-num {
+        color: #111827;
+        font-size: 18px;
+        font-weight: 700;
+        line-height: 1.15;
+      }
+      .day-nakshatra {
+        color: #111827;
+        font-size: 14px;
+        line-height: 1.3;
+        margin-top: 2px;
+      }
+      .vg {
+        color: #22c55e;
+      }
+      .g {
+        color: #86efac;
+      }
+      .b {
+        color: #fca5a5;
+      }
+      .vb {
+        color: #ef4444;
+      }
+      .tt {
+        --arrow-size: 10px;
+        position: fixed;
+        background: #1f2937;
+        color: white;
+        font-size: 12px;
+        padding: 6px 12px;
+        border-radius: 6px;
+        z-index: 999;
+        white-space: nowrap;
+        scale: 0;
+        transform-origin: 0 0;
+        transition: scale 0.3s;
+        text-align: left;
+        line-height: 1.7;
+      }
+      .tt::after {
+        content: "";
+        position: absolute;
+        top: 98%;
+        left: 50%;
+        transform: translateX(-50%);
+        border: var(--arrow-size) solid transparent;
+        border-top-color: #1f2937;
+      }
+      .tt-timeline {
+        width: 280px;
+      }
+      .tt-timeline-line {
+        position: absolute;
+        top: 14px;
+        left: 16px;
+        right: 16px;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          #6b7280 8%,
+          #6b7280 92%,
+          transparent 100%
+        );
+      }
+      .tt-timeline-points {
+        position: absolute;
+        top: 15.4px;
+        left: 36px;
+        right: 36px;
+        height: 0;
+      }
+      .tt-point {
+        position: absolute;
+        top: 0;
+        transform: translate(-50%, -50%);
+      }
+      .tt-dot {
+        display: block;
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #d1d5db;
+      }
+      .tt-time {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #9ca3af;
+        white-space: nowrap;
+      }
+      .tt-naks {
+        text-align: center;
+        margin-top: 36px;
+        width: fit-content;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .tt-row {
+        display: flex;
+        align-items: center;
+      }
+      .tt-row-label {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+      .tt-row-value {
+        margin-left: 20px;
+      }
+      .tt-tara-dot {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        margin-right: 6px;
+        position: relative;
+      }
+      .info-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: #6b7280;
+        color: white;
+        font-size: 10px;
+        font-weight: 500;
+        cursor: pointer;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .footer-disclaimer {
+        position: fixed;
+        bottom: 8px;
+        right: 12px;
+        font-size: 11px;
+      }
+      .footer-disclaimer a {
+        color: #2d5fc4;
+        text-decoration: underline;
+      }
+      .legend {
+        position: fixed;
+        bottom: 8px;
+        left: 12px;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+      }
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .legend-dot {
+        width: 8.5px;
+        height: 8.5px;
+        position: relative;
+        bottom: 0.5px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .day-cell.today {
+        outline: 3px solid #111827;
+        outline-offset: -2px;
+      }
+      .today-moon {
+        position: absolute;
+        bottom: 6px;
+        right: 8px;
+        font-size: 24px;
+        transform: rotate(15deg);
+        line-height: 1;
+        color: #111827;
+      }
+      .vg .today-moon,
+      .vb .today-moon {
+        color: white;
+      }
+      .dot {
+        display: inline-block;
+        border: 1.35px solid #111827;
+        width: 10.5px;
+        height: 10.5px;
+        border-radius: 2px;
+        margin-right: 4px;
+        vertical-align: baseline;
+        position: relative;
+        top: 0.5px;
+      }
+      .dot-green {
+        background: #86efac;
+      }
+      .dot-red {
+        background: #fca5a5;
+      }
+      .star-icon {
+        position: relative;
+        left: 2px;
+        font-size: 14px;
+        color: #111827;
+        font-weight: bold;
+      }
+      .linkedin-icon {
+        position: relative;
+        cursor: pointer;
+        top: 0.25px;
+        left: 2px;
+      }
+      .linkedin-icon + a {
+        color: #4b5563;
+        margin-left: 2px;
+        margin-right: 1px;
+        text-decoration: underline;
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.open {
+        display: flex;
+      }
+      .modal-box {
+        background: white;
+        border-radius: 12px;
+        padding: 12px 14px 14px;
+        max-width: 420px;
+        width: 90%;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        position: relative;
+      }
+      .modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        margin-bottom: 10px;
+      }
+      .modal-header h2 {
+        font-size: 15px;
+        font-weight: 700;
+        color: #111827;
+        margin: 0;
+      }
+      .modal-body {
+        padding-right: 14px;
+        text-align: justify;
+      }
+      .modal-close {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: #6b7280;
+        line-height: 1;
+      }
+      .modal-box p {
+        font-size: 13px;
+        color: #4b5563;
+        line-height: 1.6;
+      }
+      .tara-table {
+        width: 90%;
+        border-collapse: collapse;
+        margin: 12px auto;
+        font-size: 12px;
+        border: 1px solid #4b5563;
+        color: #4b5563;
+      }
+      .tara-table td,
+      .tara-table th {
+        padding: 8px 12px;
+        border: 1px solid #4b5563;
+      }
+      .tara-table td {
+        color: #111827;
+      }
+      .tara-table th {
+        background: none;
+        font-weight: 700;
+      }
+      .more-info-toggle {
+        color: #4b5563;
+        display: inline-block;
+        text-decoration: underline;
+        font-size: 13px;
+        margin: 8px 0 24px;
+      }
+      #typed-line {
+        font-size: 11px;
+        color: #374151;
+        min-height: 16px;
+        margin-top: 1px;
+      }
+      .best-days {
+        background-color: #1fae52;
+        color: white;
+      }
+      @keyframes blinkDot {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h1>Fortune Calendar - Monthly Edition</h1>
+      <div id="typed-line"></div>
+    </div>
+    <div class="controls">
+      <div class="controls-link controls-overview">
+        <a
+          onclick="
+            document.getElementById('overviewModal').classList.add('open')
+          "
+          >Overview</a
+        >
+      </div>
+      <div class="control-group">
+        <label>Birth Nakshatra:</label>
+        <span class="info-icon" id="infoIcon">i</span>
+        <select
+          id="birthNakshatra"
+          onchange="
+            saveSetting('birthNakshatra', this.value);
+            calculate();
+          "
+        ></select>
+        <span class="select-arrow"></span>
+      </div>
+      <div class="control-group">
+        <label>Month:</label>
+        <input type="month" id="monthPicker" onchange="calculate()" />
+        <span class="select-arrow"></span>
+      </div>
+      <div class="control-group">
+        <label>View:</label>
+        <div class="view-toggle">
+          <button
+            type="button"
+            id="viewSimple"
+            class="view-btn active"
+            onclick="setView('simple')"
+            title="Highlight dominant tara of the day"
+          >
+            Simple
+          </button>
+          <button
+            type="button"
+            id="viewDetailed"
+            class="view-btn"
+            onclick="setView('detailed')"
+            title="Show all tara transitions"
+          >
+            Detailed
+          </button>
+        </div>
+      </div>
+      <div class="controls-link controls-disclaimer">
+        <a
+          onclick="
+            document.getElementById('disclaimerModal').classList.add('open')
+          "
+          >Disclaimer</a
+        >
+      </div>
+    </div>
+    <div class="main">
+      <div class="calendar-wrap">
+        <div class="calendar-grid" id="calGrid"></div>
+      </div>
+    </div>
+    <div class="tt" id="tt"></div>
+    <div class="legend">
+      <div class="legend-item">
+        <div class="legend-dot" style="background: #22c55e"></div>
+        <span style="font-size: 11px; color: #374151"
+          >Auspicious / Favorable days</span
+        >
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background: #ef4444"></div>
+        <span style="font-size: 11px; color: #374151"
+          >Inauspicious / Unfavorable days</span
+        >
+      </div>
+    </div>
+    <div class="footer-disclaimer">
+      <a href="https://www.linkedin.com/in/itzbkp" target="_blank"
+        >Made by itzbkp</a
+      >
+    </div>
+    <div class="modal-overlay" id="overviewModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Overview</h2>
+          <button
+            class="modal-close"
+            onclick="
+              document.getElementById('overviewModal').classList.remove('open')
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            The application displays
+            <span class="dot dot-green"></span>favorable and
+            <span class="dot dot-red"></span>unfavorable days in a month, based
+            on your <span class="star-icon">✦</span> birth-star, using the
+            traditional Vedic frameworks and core principles of
+            <b>Nakshatra Chakra</b> and <b>Panchang</b>.
+          </p>
+          <a
+            href="javascript:void(0)"
+            id="moreInfoToggle"
+            class="more-info-toggle"
+            onclick="showTaraInfo()"
+            >Read more</a
+          >
+          <div id="info-container" style="display: none">
+            <table class="tara-table">
+              <thead>
+                <tr>
+                  <th>Tara</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody id="taraTable"></tbody>
+            </table>
+          </div>
+          <p>
+            In case of any issues, please contact us on
+            <svg
+              class="linkedin-icon"
+              height="10"
+              width="10"
+              viewBox="0 0 382 382"
+            >
+              <path
+                fill="#2d5fc4"
+                d="M347.445,0H34.555C15.471,0,0,15.471,0,34.555v312.889C0,366.529,15.471,382,34.555,382h312.889
+	C366.529,382,382,366.529,382,347.444V34.555C382,15.471,366.529,0,347.445,0z M118.207,329.844c0,5.554-4.502,10.056-10.056,10.056
+	H65.345c-5.554,0-10.056-4.502-10.056-10.056V150.403c0-5.554,4.502-10.056,10.056-10.056h42.806
+	c5.554,0,10.056,4.502,10.056,10.056V329.844z M86.748,123.432c-22.459,0-40.666-18.207-40.666-40.666S64.289,42.1,86.748,42.1
+	s40.666,18.207,40.666,40.666S109.208,123.432,86.748,123.432z M341.91,330.654c0,5.106-4.14,9.246-9.246,9.246H286.73
+	c-5.106,0-9.246-4.14-9.246-9.246v-84.168c0-12.556,3.683-55.021-32.813-55.021c-28.309,0-34.051,29.066-35.204,42.11v97.079
+	c0,5.106-4.139,9.246-9.246,9.246h-44.426c-5.106,0-9.246-4.14-9.246-9.246V149.593c0-5.106,4.14-9.246,9.246-9.246h44.426
+	c5.106,0,9.246,4.14,9.246,9.246v15.655c10.497-15.753,26.097-27.912,59.312-27.912c73.552,0,73.131,68.716,73.131,106.472
+	L341.91,330.654L341.91,330.654z"
+              />
+            </svg>
+            <a href="https://www.linkedin.com/in/itzbkp" target="_blank"
+              >itzbkp</a
+            >.
+          </p>
+        </div>
+      </div>
+    </div>
+    <div class="modal-overlay" id="disclaimerModal">
+      <div class="modal-box">
+        <div class="modal-header">
+          <h2>Disclaimer</h2>
+          <button
+            class="modal-close"
+            onclick="
+              document
+                .getElementById('disclaimerModal')
+                .classList.remove('open')
+            "
+          >
+            ✕
+          </button>
+        </div>
+        <div class="modal-body">
+          <p>
+            This application is solely intended for informational and
+            educational purposes. The results are largely based on astrological
+            principles and ephemeris data, therefore should not be considered as
+            absolute predictions or professional advice.
+          </p>
+        </div>
+      </div>
+    </div>
+    <script>
+      const D2R = Math.PI / 180;
+      function norm360(x) {
+        return ((x % 360) + 360) % 360;
+      }
+      function moonTropicalLongitude(date) {
+        const JD = date.getTime() / 86400000 + 2440587.5;
+        const T = (JD - 2451545.0) / 36525,
+          T2 = T * T,
+          T3 = T2 * T,
+          T4 = T3 * T;
+        let Lp = norm360(
+          218.3164477 +
+            481267.88123421 * T -
+            0.0015786 * T2 +
+            T3 / 538841 -
+            T4 / 65194000
+        );
+        let D = norm360(
+          297.8501921 +
+            445267.1114034 * T -
+            0.0018819 * T2 +
+            T3 / 545868 -
+            T4 / 113065000
+        );
+        let M = norm360(
+          357.5291092 + 35999.0502909 * T - 0.0001536 * T2 + T3 / 24490000
+        );
+        let Mp = norm360(
+          134.9633964 +
+            477198.8675055 * T +
+            0.0087414 * T2 +
+            T3 / 69699 -
+            T4 / 14712000
+        );
+        let F = norm360(
+          93.272095 +
+            483202.0175233 * T -
+            0.0036539 * T2 -
+            T3 / 3526000 +
+            T4 / 863310000
+        );
+        const A1 = norm360(119.75 + 131.849 * T),
+          A2 = norm360(53.09 + 479264.29 * T);
+        const E = 1 - 0.002516 * T - 0.0000074 * T2,
+          E2 = E * E;
+        const terms = [
+          [0, 0, 1, 0, 6288774],
+          [2, 0, -1, 0, 1274027],
+          [2, 0, 0, 0, 658314],
+          [0, 0, 2, 0, 213618],
+          [0, 1, 0, 0, -185116],
+          [0, 0, 0, 2, -114332],
+          [2, 0, -2, 0, 58793],
+          [2, -1, -1, 0, 57066],
+          [2, 0, 1, 0, 53322],
+          [2, -1, 0, 0, 45758],
+          [0, 1, -1, 0, -40923],
+          [1, 0, 0, 0, -34720],
+          [0, 1, 1, 0, -30383],
+          [2, 0, 0, -2, 15327],
+          [0, 0, 1, 2, -12528],
+          [0, 0, 1, -2, 10980],
+          [4, 0, -1, 0, 10675],
+          [0, 0, 3, 0, 10034],
+          [4, 0, -2, 0, 8548],
+          [2, 1, -1, 0, -7888],
+          [2, 1, 0, 0, -6766],
+          [1, 0, -1, 0, -5163],
+          [1, 1, 0, 0, 4987],
+          [2, -1, 1, 0, 4036],
+          [2, 0, 2, 0, 3994],
+          [4, 0, 0, 0, 3861],
+          [2, 0, -3, 0, 3665],
+          [0, 1, -2, 0, -2689],
+          [2, 0, -1, 2, -2602],
+          [2, -1, -2, 0, 2390],
+          [1, 0, 1, 0, -2348],
+          [2, -2, 0, 0, 2236],
+          [0, 1, 2, 0, -2120],
+          [0, 2, 0, 0, -2069],
+          [2, -2, -1, 0, 2048],
+          [2, 0, 1, -2, -1773],
+          [2, 0, 0, 2, -1595],
+          [4, -1, -1, 0, 1215],
+          [0, 0, 2, 2, -1110],
+          [3, 0, -1, 0, -892],
+          [2, 1, 1, 0, -810],
+          [4, -1, -2, 0, 759],
+          [0, 2, -1, 0, -713],
+          [2, 2, -1, 0, -700],
+          [2, 1, -2, 0, 691],
+          [2, -1, 0, -2, 596],
+          [4, 0, 1, 0, 549],
+          [0, 0, 4, 0, 537],
+          [4, -1, 0, 0, 520],
+          [1, 0, -2, 0, -487],
+          [2, 1, 0, -2, -399],
+          [0, 0, 2, -2, -381],
+          [1, 1, 1, 0, 351],
+          [3, 0, -2, 0, -340],
+          [4, 0, -3, 0, 330],
+          [2, -1, 2, 0, 327],
+          [0, 2, 1, 0, -323],
+          [1, 1, -1, 0, 299],
+          [2, 0, 3, 0, 294]
+        ];
+        let sigL = 0;
+        for (const [td, tm, tmp, tf, coeff] of terms) {
+          const arg = (td * D + tm * M + tmp * Mp + tf * F) * D2R;
+          let ec = 1;
+          if (Math.abs(tm) === 1) ec = E;
+          else if (Math.abs(tm) === 2) ec = E2;
+          sigL += ec * coeff * Math.sin(arg);
+        }
+        sigL +=
+          3958 * Math.sin(A1 * D2R) +
+          1962 * Math.sin((Lp - F) * D2R) +
+          318 * Math.sin(A2 * D2R);
+        const omega = norm360(125.04452 - 1934.136261 * T);
+        const nutLon =
+          -17.2 * Math.sin(omega * D2R) - 1.32 * Math.sin(2 * Lp * D2R);
+        return norm360(Lp + sigL / 1000000 + nutLon / 3600);
+      }
+      function lahiriAyanamsa(date) {
+        const yr =
+          (date.getTime() - Date.UTC(2000, 0, 1, 12)) / (365.25 * 86400000);
+        return 23.85 + yr * 0.013972;
+      }
+      const NAK_SIZE = 360 / 27;
+      const NAKSHATRAS = [
+        { name: "Ashwini", short: "Ash" },
+        { name: "Bharani", short: "Bha" },
+        { name: "Krittika", short: "Kri" },
+        { name: "Rohini", short: "Roh" },
+        { name: "Mrigashira", short: "Mri" },
+        { name: "Ardra", short: "Ard" },
+        { name: "Punarvasu", short: "Pun" },
+        { name: "Pushya", short: "Pus" },
+        { name: "Ashlesha", short: "Ashl" },
+        { name: "Magha", short: "Mag" },
+        { name: "Purva Phalguni", short: "PPh" },
+        { name: "Uttara Phalguni", short: "UPh" },
+        { name: "Hasta", short: "Has" },
+        { name: "Chitra", short: "Chi" },
+        { name: "Swati", short: "Swa" },
+        { name: "Vishakha", short: "Vis" },
+        { name: "Anuradha", short: "Anu" },
+        { name: "Jyeshtha", short: "Jye" },
+        { name: "Mula", short: "Mul" },
+        { name: "Purva Ashadha", short: "PAs" },
+        { name: "Uttara Ashadha", short: "UAs" },
+        { name: "Shravana", short: "Shr" },
+        { name: "Dhanishta", short: "Dha" },
+        { name: "Shatabhisha", short: "Sha" },
+        { name: "Purva Bhadrapada", short: "PBh" },
+        { name: "Uttara Bhadrapada", short: "UBh" },
+        { name: "Revati", short: "Rev" }
+      ];
+      const TARA = [
+        { cls: "b", name: "Janma", desc: "Life, self-confidence, vitality" },
+        { cls: "g", name: "Sampat", desc: "Wealth, gain, prosperity" },
+        { cls: "b", name: "Vipat", desc: "Hardship, obstacles, hindrance" },
+        { cls: "g", name: "Kshema", desc: "Happiness, peace, well-being" },
+        { cls: "b", name: "Pratyari", desc: "Illness, enemies, obstruction" },
+        { cls: "g", name: "Sadhana", desc: "Success, progress, achievement" },
+        { cls: "vb", name: "Naidhana", desc: "Death, accidents, loss" },
+        { cls: "g", name: "Mitra", desc: "Friendship, cooperation, support" },
+        { cls: "vg", name: "Atimitra", desc: "Great gain, favorable endeavors" }
+      ];
+      const taraColor = {
+        vg: "#22c55e",
+        g: "#86efac",
+        b: "#fca5a5",
+        vb: "#ef4444"
+      };
+      let ttTimer = null;
+      let viewMode = "simple";
+      async function saveSetting(key, value) {
+        if (window.storage) {
+          try {
+            await window.storage.set(key, value, false);
+          } catch (e) {}
+        } else {
+          try {
+            localStorage.setItem(key, value);
+          } catch (e) {}
+        }
+      }
+      async function loadSetting(key) {
+        if (window.storage) {
+          try {
+            const res = await window.storage.get(key, false);
+            return res ? res.value : null;
+          } catch (e) {
+            return null;
+          }
+        }
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          return null;
+        }
+      }
+      function setView(mode) {
+        viewMode = mode;
+        document
+          .getElementById("viewSimple")
+          .classList.toggle("active", mode === "simple");
+        document
+          .getElementById("viewDetailed")
+          .classList.toggle("active", mode === "detailed");
+        calculate();
+        saveSetting("viewMode", mode);
+      }
+      async function initViewMode() {
+        const saved = await loadSetting("viewMode");
+        if (saved === "simple" || saved === "detailed") setView(saved);
+      }
+      function dayStartUTC(yr, mo, d) {
+        return Date.UTC(yr, mo - 1, d) - 330 * 60000;
+      }
+      function getMoonNakshatra(date) {
+        const tropical = moonTropicalLongitude(date);
+        let sid = tropical - lahiriAyanamsa(date);
+        if (sid < 0) sid += 360;
+        if (sid >= 360) sid -= 360;
+        const idx = Math.min(26, Math.floor(sid / NAK_SIZE));
+        const pada = Math.floor((sid % NAK_SIZE) / (NAK_SIZE / 4)) + 1;
+        return { id: idx, nak: NAKSHATRAS[idx], pada };
+      }
+      function findNakBoundaries(t1, id1, t2, id2, out) {
+        if (id1 === id2) return;
+        if (t2 - t1 <= 60000) {
+          out.push(t2);
+          return;
+        }
+        const midT = t1 + Math.round((t2 - t1) / 2 / 60000) * 60000;
+        const midId = getMoonNakshatra(new Date(midT)).id;
+        findNakBoundaries(t1, id1, midT, midId, out);
+        findNakBoundaries(midT, midId, t2, id2, out);
+      }
+      function getDayNakshatras(yr, mo, d) {
+        const startMs = dayStartUTC(yr, mo, d);
+        const endMs = dayStartUTC(yr, mo, d + 1);
+        const startId = getMoonNakshatra(new Date(startMs)).id;
+        const endId = getMoonNakshatra(new Date(endMs)).id;
+        const boundaries = [];
+        findNakBoundaries(startMs, startId, endMs, endId, boundaries);
+        boundaries.sort((a, b) => a - b);
+        const points = [startMs, ...boundaries, endMs];
+        const segments = [];
+        for (let i = 0; i < points.length - 1; i++) {
+          if (points[i] === points[i + 1]) continue;
+          const cur = getMoonNakshatra(new Date(points[i]));
+          segments.push({
+            nak: cur.nak,
+            tara: getTara(cur.id),
+            from: points[i],
+            to: points[i + 1]
+          });
+        }
+        return segments;
+      }
+      function fmtTime(ms) {
+        const totalMin = Math.floor(ms / 60000) + 330;
+        const h = Math.floor(totalMin / 60) % 24;
+        const m = ((totalMin % 60) + 60) % 60;
+        const ampm = h >= 12 ? "PM" : "AM";
+        const hh = h % 12 === 0 ? 12 : h % 12;
+        return `${hh}:${String(m).padStart(2, "0")} ${ampm}`;
+      }
+      function getTara(dayIdx) {
+        const birthIdx = parseInt(
+          document.getElementById("birthNakshatra").value
+        );
+        return TARA[((dayIdx - birthIdx + 27) % 27) % 9];
+      }
+      function showTaraInfo() {
+        document.getElementById("info-container").style.display = "block";
+        document.getElementById("moreInfoToggle").style.display = "none";
+      }
+      function renderTaraTable() {
+        document.getElementById("taraTable").innerHTML = TARA.map(
+          (t) => `
+          <tr style="background:${taraColor[t.cls]}">
+            <td>${t.name}</td>
+            <td>${t.desc}</td>
+          </tr>`
+        ).join("");
+      }
+      async function populate() {
+        const sel = document.getElementById("birthNakshatra");
+        NAKSHATRAS.forEach((n, i) => {
+          const o = document.createElement("option");
+          o.value = i;
+          o.textContent = n.name;
+          if (i === 20) o.selected = true;
+          sel.appendChild(o);
+        });
+        const savedNak = await loadSetting("birthNakshatra");
+        if (savedNak !== null && savedNak !== undefined) sel.value = savedNak;
+        const now = new Date();
+        document.getElementById("monthPicker").value =
+          `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+        calculate();
+      }
+      function calculate() {
+        const val = document.getElementById("monthPicker").value;
+        const [yr, mo] = val.split("-").map(Number);
+        const daysInMonth = new Date(yr, mo, 0).getDate();
+        const offset = (new Date(yr, mo - 1, 1).getDay() + 6) % 7;
+        const dayNames = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        let cells = dayNames
+          .map((d) => `<div class="day-name">${d}</div>`)
+          .join("");
+        for (let i = 0; i < offset; i++)
+          cells += `<div class="day-cell empty"></div>`;
+        const now = new Date();
+        const todayY = now.getFullYear(),
+          todayM = now.getMonth() + 1,
+          todayD = now.getDate();
+        const bands = [20, 40, 60, 80, 100];
+        for (let d = 1; d <= daysInMonth; d++) {
+          const isToday = yr === todayY && mo === todayM && d === todayD;
+          const segs = getDayNakshatras(yr, mo, d);
+          const segData = JSON.stringify(segs);
+          const winStart =
+            dayStartUTC(yr, mo, d) + (viewMode === "simple" ? 9 * 3600000 : 0);
+          const winEnd = dayStartUTC(yr, mo, d + 1);
+          const winTotal = winEnd - winStart;
+          const eligible = segs
+            .map((s) => ({
+              nak: s.nak,
+              tara: s.tara,
+              overlap: Math.min(s.to, winEnd) - Math.max(s.from, winStart)
+            }))
+            .filter((e) => e.overlap > 0);
+          let running = 0;
+          let prev = 0;
+          const bg = eligible
+            .map((e, i) => {
+              running += (e.overlap / winTotal) * 100;
+              const remaining = eligible.length - 1 - i;
+              const boundary =
+                i === eligible.length - 1
+                  ? 100
+                  : bands
+                      .filter((b) => b > prev && b <= 100 - 20 * remaining)
+                      .reduce((a, b) =>
+                        Math.abs(b - running) < Math.abs(a - running) ? b : a
+                      );
+              const color = taraColor[e.tara.cls];
+              const stop = `${color} ${prev}%, ${color} ${boundary}%`;
+              prev = boundary;
+              return stop;
+            })
+            .join(", ");
+          eligible.sort((a, b) => b.overlap - a.overlap);
+          const simpleBg = taraColor[eligible[0]?.tara.cls];
+          const detailedBg = `linear-gradient(to right, ${bg})`;
+          cells += `<div class="day-cell ${isToday ? " today" : ""}" data-segs='${segData}' style="background:${viewMode === "simple" ? simpleBg : detailedBg}">
+          ${isToday ? `<span class="today-moon">🌙︎</span>` : ""}
+          <div class="day-num">${d}</div>
+          <div class="day-nakshatra">${viewMode === "simple" ? eligible[0]?.nak.name : segs.map((s) => s.nak.short).join(" ➔ ")}</div>
+          </div>`;
+        }
+        document.getElementById("calGrid").innerHTML = cells;
+        enforceCellRatio();
+        bindTooltips();
+      }
+      const tt = document.getElementById("tt");
+      document.addEventListener("click", (e) => {
+        if (
+          !tt.contains(e.target) &&
+          !e.target.closest(".day-cell") &&
+          !e.target.closest(".info-icon")
+        ) {
+          tt.style.scale = "0";
+        }
+      });
+      function showTt(el, text) {
+        if (text) {
+          tt.textContent = text;
+          tt.style.setProperty("--arrow-size", "7px");
+        } else {
+          const segs = el.dataset.segs ? JSON.parse(el.dataset.segs) : null;
+          const d = parseInt(el.querySelector(".day-num").textContent);
+          if (segs && segs.length) {
+            const startMs = dayStartUTC(
+              parseInt(
+                document.getElementById("monthPicker").value.split("-")[0]
+              ),
+              parseInt(
+                document.getElementById("monthPicker").value.split("-")[1]
+              ),
+              d
+            );
+            const endMs = dayStartUTC(
+              parseInt(
+                document.getElementById("monthPicker").value.split("-")[0]
+              ),
+              parseInt(
+                document.getElementById("monthPicker").value.split("-")[1]
+              ),
+              d + 1
+            );
+            const totalMin = (endMs - startMs) / 60000;
+            let boundaries = segs.slice(0, -1).map((s) => s.to);
+            if (boundaries.length === 0) {
+              boundaries = [startMs, endMs];
+            }
+            const dots = boundaries
+              .map((t, i) => {
+                const pct = ((t - startMs) / 60000 / totalMin) * 100;
+                return `<div class="tt-point" style="left:${pct}%"><span class="tt-dot"></span><span class="tt-time">${fmtTime(t)}</span></div>`;
+              })
+              .join("");
+            const lineStops = ["transparent 0%"];
+            segs.forEach((s) => {
+              const color = taraColor[s.tara.cls];
+              const startPct =
+                8 + ((s.from - startMs) / (endMs - startMs)) * 84;
+              const endPct = 8 + ((s.to - startMs) / (endMs - startMs)) * 84;
+              lineStops.push(`${color} ${startPct}%`, `${color} ${endPct}%`);
+            });
+            lineStops.push("transparent 100%");
+            const lineGradient =
+              viewMode === "simple"
+                ? ""
+                : `style="background:linear-gradient(90deg, ${lineStops.join(", ")})"`;
+            const naks = segs
+              .map((s) =>
+                viewMode === "simple"
+                  ? `<span class=${s.tara.cls}>${s.nak.name}</span>`
+                  : `<div class="tt-row"><span class="tt-row-label"><span><span class="tt-tara-dot" style="background:${taraColor[s.tara.cls]}"></span>${s.tara.name}</span><span>:</span></span><span class="tt-row-value">${s.nak.name}</span></div>`
+              )
+              .join(viewMode === "simple" ? "&nbsp; ➔ &nbsp;" : "");
+            tt.innerHTML = `<div class="tt-timeline"><div class="tt-timeline-line" ${lineGradient}></div><div class="tt-timeline-points">${dots}</div></div>`;
+            tt.innerHTML += `<div class="tt-naks">${naks}</div>`;
+            tt.style.setProperty("--arrow-size", "10px");
+          }
+        }
+        const r = el.getBoundingClientRect();
+        tt.style.left = r.left + r.width / 2 + "px";
+        tt.style.top = r.top - (text ? 8 : 12) + "px";
+        tt.style.transform = "translate(-50%,-100%)";
+        tt.style.scale = "1";
+        if (!text && viewMode === "detailed") {
+          const labels = tt.querySelectorAll(".tt-row-label");
+          let maxNameW = 0;
+          let maxColonW = 0;
+          labels.forEach((l) => {
+            const nameW = l.children[0].offsetWidth;
+            const colonW = l.children[1].offsetWidth;
+            if (nameW > maxNameW) maxNameW = nameW;
+            if (colonW > maxColonW) maxColonW = colonW;
+          });
+          labels.forEach((l) => {
+            l.style.width = maxNameW + 20 + maxColonW + "px";
+          });
+        }
+      }
+      function bindTooltips() {
+        const todayCell = document.querySelector(".day-cell.today");
+        setTimeout(() => {
+          if (todayCell) showTt(todayCell);
+        }, 10);
+        document.querySelectorAll(".day-cell:not(.empty)").forEach((el) => {
+          el.addEventListener("mouseenter", () => {
+            clearTimeout(ttTimer);
+            ttTimer = setTimeout(() => showTt(el), 0);
+          });
+          el.addEventListener("mouseleave", () => {
+            clearTimeout(ttTimer);
+            tt.style.scale = "0";
+          });
+        });
+      }
+      function enforceCellRatio() {
+        requestAnimationFrame(() => {
+          const grid = document.getElementById("calGrid");
+          const main = document.querySelector(".main");
+          if (!grid || !main) return;
+          const bodyW = document.body.offsetWidth,
+            bodyH = document.body.offsetHeight;
+          const controlsH = document.querySelector(".controls").offsetHeight;
+          const headerH = document.querySelector(".header").offsetHeight;
+          const availH = bodyH - controlsH - headerH - 32;
+          const rows = Math.ceil(grid.children.length / 7);
+          const gap = 8;
+          const cellH = (availH - (rows - 1) * gap - 24 - gap) / (rows - 1);
+          const cellW = cellH * 1.5;
+          const needed = 7 * cellW + 6 * gap;
+          const pad = Math.max(16, Math.floor((bodyW - needed) / 2));
+          main.style.paddingLeft = pad + "px";
+          main.style.paddingRight = pad + "px";
+          document.querySelectorAll(".day-cell").forEach((c) => {
+            if (!c.classList.contains("day-name"))
+              c.style.height = Math.floor(cellH) + "px";
+          });
+        });
+      }
+      const infoIcon = document.getElementById("infoIcon");
+      let infoTtTimer = null;
+      infoIcon.addEventListener("mouseenter", () => {
+        clearTimeout(infoTtTimer);
+        infoTtTimer = setTimeout(
+          () => showTt(infoIcon, "Click here to find your birth nakshatra"),
+          0
+        );
+      });
+      infoIcon.addEventListener("mouseleave", () => {
+        clearTimeout(infoTtTimer);
+        tt.style.scale = "0";
+      });
+      infoIcon.addEventListener("click", () =>
+        window.open(
+          "https://www.astroyogi.com/kundli/nakshatra-calculator",
+          "_blank"
+        )
+      );
+      document
+        .querySelectorAll("#disclaimerModal, #overviewModal")
+        .forEach((modal) => {
+          modal.addEventListener("click", function (e) {
+            if (e.target === this) this.classList.remove("open");
+          });
+        });
+      window.addEventListener("resize", calculate);
+      populate();
+      initViewMode();
+      renderTaraTable();
+
+      (function () {
+        const el = document.getElementById("typed-line");
+        const texts = [
+          {
+            str: "Find your favorable days",
+            pivot: "Find your",
+            key: " favorable "
+          },
+          {
+            str: "Your best-days are ahead of you",
+            pivot: "Your",
+            key: " best-days "
+          }
+        ];
+        let ti = 0,
+          ci = 0,
+          del = false,
+          blinkTimer = null;
+        function stopBlink() {
+          clearInterval(blinkTimer);
+          blinkTimer = null;
+          if (el.querySelector(".blink-dot"))
+            el.querySelector(".blink-dot").className = "";
+        }
+        function startBlink(base, key) {
+          const parts = base.split(key);
+          el.innerHTML = `${parts[0]}<span class="best-days">${key}</span>${parts[1]}<span class="blink-dot"><span class="d1">.</span><span class="d2">.</span><span class="d3">.</span></span>`;
+          let step = 0;
+          const dots = el.querySelectorAll(".blink-dot span");
+          dots.forEach((d) => (d.style.visibility = "hidden"));
+          blinkTimer = setInterval(() => {
+            step = (step % 3) + 1;
+            dots.forEach(
+              (d, i) => (d.style.visibility = i < step ? "visible" : "hidden")
+            );
+          }, 250);
+        }
+        function render(str, pivot, key) {
+          if (str.includes(key)) {
+            const parts = str.split(key);
+            el.innerHTML = `${parts[0]}<span class="best-days">${key}</span>${parts[1]}`;
+          } else if (str.length > pivot.length) {
+            el.innerHTML = `${str.slice(0, pivot.length)}<span class="best-days">${str.slice(pivot.length)}</span>`;
+          } else {
+            el.textContent = str;
+          }
+        }
+        function tick() {
+          const { str, pivot, key } = texts[ti];
+          if (!del) {
+            ci++;
+            render(str.slice(0, ci), pivot, key);
+            if (ci === str.length) {
+              del = true;
+              startBlink(str, key);
+              setTimeout(tick, 3000);
+              return;
+            }
+            setTimeout(tick, 20);
+          } else {
+            stopBlink();
+            ci--;
+            render(str.slice(0, ci), pivot, key);
+            if (ci === 0) {
+              del = false;
+              ti = (ti + 1) % texts.length;
+              setTimeout(tick, 100);
+              return;
+            }
+            setTimeout(tick, 20);
+          }
+        }
+        tick();
+      })();
+    </script>
+  </body>
+</html>
