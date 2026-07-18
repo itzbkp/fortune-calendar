@@ -1,3 +1,5 @@
+<img width="800" height="520" alt="fortune-calendar" src="https://github.com/user-attachments/assets/d13dc914-c36f-4633-b293-9ea40f8b2850" />
+
 # Fortune Calendar — Monthly Edition
 
 The application displays favorable and unfavorable days in a month, based on your birth-star, using the traditional Vedic frameworks and core principles of Nakshatra Chakra and Panchang.
