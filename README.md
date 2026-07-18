@@ -1,4 +1,6 @@
-<img width="800" height="520" alt="fortune-calendar" src="https://github.com/user-attachments/assets/d13dc914-c36f-4633-b293-9ea40f8b2850" />
+<p align="center">
+  <img width="800" height="520" alt="fortune-calendar" src="https://github.com/user-attachments/assets/04bed5d9-12eb-4812-9a63-3eb7a0989fab" />
+</p>
 
 # Fortune Calendar — Monthly Edition
 
